@@ -1,5 +1,7 @@
 package local.sierraog.compflow.services;
 
+import local.sierraog.compflow.exceptions.IncorrectInputTypeException;
+import local.sierraog.compflow.exceptions.InputOutOfBoundsException;
 import local.sierraog.compflow.models.Input;
 import local.sierraog.compflow.models.Rayleigh;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,19 @@ public class RayleighServiceImpl extends RayBaseFunctions {
         double uustar;
         double sstarsr;
 
+        if (gamma <= 1.0) {
+            throw new InputOutOfBoundsException("Gamma must be greater than 1");
+        }
+
         switch (input.getInputType()){
             case "mach":
                 mach = input.getInputValue();
+                if (mach <= 0.0){
+                    throw new InputOutOfBoundsException("Mach number must be greater than 0");
+                }
                 break;
             default:
-                mach = 0.0;
-                break;
+                throw new IncorrectInputTypeException();
         }
         totostar = totos(mach, gamma);
         ttstar = tts(mach, gamma);

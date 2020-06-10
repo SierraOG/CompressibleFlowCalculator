@@ -1,5 +1,7 @@
 package local.sierraog.compflow.services;
 
+import local.sierraog.compflow.exceptions.IncorrectInputTypeException;
+import local.sierraog.compflow.exceptions.InputOutOfBoundsException;
 import local.sierraog.compflow.models.Input;
 import local.sierraog.compflow.models.NormalShock;
 import org.springframework.stereotype.Service;
@@ -18,26 +20,48 @@ public class NormalShockServiceImpl extends NormBaseFunctions {
         double rho2rho1;
         double t2t1;
 
+        if (gamma <= 1.0) {
+            throw new InputOutOfBoundsException("Gamma must be greater than 1");
+        }
+
         switch (input.getInputType()){
             case "mach":
                 mach = input.getInputValue();
+                if (mach <= 0.0){
+                    throw new InputOutOfBoundsException("Mach number must be greater than 0");
+                }
                 break;
             case "mach2":
+                if(input.getInputValue() >= 1.0 || input.getInputValue() <= Math.sqrt((gamma - 1.0)/2.0/gamma)) {
+                    throw new InputOutOfBoundsException("M2 must be between " + Math.sqrt((gamma - 1.0) / 2.0 / gamma) + " and 1");
+                }
                 mach = mach2(input.getInputValue(), gamma);
                 break;
             case "pres":
+                if (input.getInputValue() <= 1.0){
+                    throw new InputOutOfBoundsException("P2/P1 must be greater than 1");
+                }
                 mach = Math.sqrt((input.getInputValue() - 1.0)*(gamma + 1.0)/2.0/gamma + 1.0);
                 break;
             case "rho":
+                if(input.getInputValue() <= 1.0 || input.getInputValue() >= (gamma + 1.0)/(gamma - 1.0)) {
+                    throw new InputOutOfBoundsException("rho2/rho1 must be between 1 and "+ ((gamma + 1.0)/(gamma - 1.0)));
+                }
                 mach = Math.sqrt(2.0*input.getInputValue()/(gamma + 1.0 - input.getInputValue()*(gamma - 1.0)));
                 break;
             case "temp":
+                if (input.getInputValue() <= 1.0){
+                    throw new InputOutOfBoundsException("T2/T1 must be greater than 1");
+                }
                 double aa=2.0*gamma*(gamma-1.0);
                 double bb=4.0*gamma-(gamma-1.0)*(gamma-1.0)-input.getInputValue()*(gamma+1.0)*(gamma+1.0);
                 double cc=-2.0*(gamma-1.0);
                 mach = Math.sqrt((-bb+Math.sqrt(bb*bb-4.0*aa*cc))/2.0/aa);
                 break;
             case "stagpres":
+                if(input.getInputValue() >= 1.0 || input.getInputValue() <= 0.0) {
+                    throw new InputOutOfBoundsException("P02/P01 must be between 0 and 1");
+                }
                 double mnew = 2.0;
                 mach = 0.0;
                 double al;
@@ -57,6 +81,10 @@ public class NormalShockServiceImpl extends NormBaseFunctions {
                     mnew = mach - fm/fdm;
                 }
             case "presstagpres":
+                double vmax=Math.pow((gamma + 1.0)/2.0,-gamma/(gamma - 1.0));
+                if(input.getInputValue() >= vmax || input.getInputValue() <= 0.0) {
+                    throw new InputOutOfBoundsException("p1/p02 must be between 0 and "+ vmax);
+                }
                 mnew = 2.0;
                 mach = 0.0;
                 while( Math.abs(mnew - mach) > 0.00001) {
@@ -70,8 +98,7 @@ public class NormalShockServiceImpl extends NormBaseFunctions {
                     mnew = mach-fm/fdm;
                 }
             default:
-                mach = 0.0;
-                break;
+                throw new IncorrectInputTypeException();
         }
         mach2 = mach2(mach, gamma);
         p2p1 = 1.0 + 2.0*gamma/(gamma+1.0)*(mach*mach - 1.0);

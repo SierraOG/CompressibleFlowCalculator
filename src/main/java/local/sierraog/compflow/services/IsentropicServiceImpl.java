@@ -1,5 +1,7 @@
 package local.sierraog.compflow.services;
 
+import local.sierraog.compflow.exceptions.IncorrectInputTypeException;
+import local.sierraog.compflow.exceptions.InputOutOfBoundsException;
 import local.sierraog.compflow.models.Input;
 import local.sierraog.compflow.models.Isentropic;
 import org.springframework.stereotype.Service;
@@ -21,24 +23,45 @@ public class IsentropicServiceImpl extends IsentBaseFunctions {
         double ttstar;
         double aastar;
 
+        if (gamma <= 1.0) {
+            throw new InputOutOfBoundsException("Gamma must be greater than 1");
+        }
+
         switch (input.getInputType()){
             case "mach":
                 mach = input.getInputValue();
+
+                if (mach <= 0.0){
+                    throw new InputOutOfBoundsException("Mach number must be greater than 0");
+                }
+
                 break;
             case "temp":
                 tto = input.getInputValue();
+                if (tto >= 1.0 || tto <= 0.0){
+                    throw new InputOutOfBoundsException("T/T0 must be between 0 and 1");
+                }
                 mach = Math.sqrt(2.0*((1.0/tto)-1.0)/(gamma-1.0));
                 break;
             case "pres":
                 ppo = input.getInputValue();
+                if (ppo >= 1.0 || ppo <= 0.0){
+                    throw new InputOutOfBoundsException("P/P0 must be between 0 and 1");
+                }
                 mach = Math.sqrt(2.0*((1.0/Math.pow(ppo,(gamma-1.0)/gamma))-1.0)/(gamma-1.0));
                 break;
             case "rho":
                 rhorhoo = input.getInputValue();
+                if (rhorhoo >= 1.0 || rhorhoo <= 0.0){
+                    throw new InputOutOfBoundsException("rho/rho0 must be between 0 and 1");
+                }
                 mach = Math.sqrt(2.*((1./Math.pow(rhorhoo,(gamma-1.0)))-1.0)/(gamma-1.0));
                 break;
             case "areasub":
             case "areasuper":
+                if (input.getInputValue() <= 1.0){
+                    throw new InputOutOfBoundsException("A/A* must be greater than 1");
+                }
                 double mnew = (input.getInputType() == "areasuper") ? 2.0 : 0.00001;
                 mach = 0.0;
                 double phi;
@@ -52,9 +75,16 @@ public class IsentropicServiceImpl extends IsentBaseFunctions {
                 break;
             case "machangle":
                 machangle = input.getInputValue();
+                if (machangle <= 0.0 || machangle >= 90.0){
+                    throw new InputOutOfBoundsException("Mach angle must be between 0 and 90 degrees");
+                }
                 mach = 1.0/Math.sin(machangle*3.14159265359/180.0);
                 break;
             case "pmangle":
+                double numax = (Math.sqrt((gamma + 1.0)/(gamma - 1.0)) - 1.0)*90.0;
+                if (input.getInputValue() <= 0.0 || input.getInputValue() >= numax){
+                    throw new InputOutOfBoundsException("Prandtl-Meyer angle must be between 0 and " + numax);
+                }
                 mnew = 2.0 ;
                 mach = 0.0;
                 double fm;
@@ -67,8 +97,7 @@ public class IsentropicServiceImpl extends IsentBaseFunctions {
                 }
                 break;
             default:
-                mach = 0.0;
-                break;
+                throw new IncorrectInputTypeException();
         }
         tto = tto(mach, gamma);
         if(mach>1.0) {
