@@ -34,8 +34,8 @@ public class Swagger2Config {
                 .contact(new Contact("Sierra Obermoeller-Gilmer",
                         "http://www.sierrao.com",
                         "sierrao@utexas.edu"))
-                .license("")
-                .licenseUrl("")
+                .license("MIT")
+                .licenseUrl("https://github.com/SierraOG/CompressibleFlowCalculator/blob/master/LICENSE")
                 .version("1.0.0")
                 .build();
     }
