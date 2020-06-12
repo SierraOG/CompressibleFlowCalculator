@@ -3,15 +3,13 @@ package local.sierraog.compflow.services;
 import local.sierraog.compflow.exceptions.IncorrectInputTypeException;
 import local.sierraog.compflow.exceptions.InputOutOfBoundsException;
 import local.sierraog.compflow.models.Fanno;
-import local.sierraog.compflow.models.Input;
 import org.springframework.stereotype.Service;
 
 @Service(value = "fannoService")
 public class FannoServiceImpl extends FanBaseFunctions {
     @Override
-    public Fanno findFannoFlow(Input input){
+    public Fanno findFannoFlow(double gamma, String inputType, double inputValue){
         Fanno fannoFlow;
-        double gamma = input.getGamma();
         double mach;
         double ttstar;
         double ppstar;
@@ -24,9 +22,9 @@ public class FannoServiceImpl extends FanBaseFunctions {
             throw new InputOutOfBoundsException("Gamma must be greater than 1");
         }
 
-        switch (input.getInputType()){
+        switch (inputType){
             case "mach":
-                mach = input.getInputValue();
+                mach = inputValue;
 
                 if (mach <= 0.0){
                     throw new InputOutOfBoundsException("Mach number must be greater than 0");

@@ -2,16 +2,14 @@ package local.sierraog.compflow.services;
 
 import local.sierraog.compflow.exceptions.IncorrectInputTypeException;
 import local.sierraog.compflow.exceptions.InputOutOfBoundsException;
-import local.sierraog.compflow.models.Input;
 import local.sierraog.compflow.models.Rayleigh;
 import org.springframework.stereotype.Service;
 
 @Service(value = "rayleighService")
 public class RayleighServiceImpl extends RayBaseFunctions {
     @Override
-    public Rayleigh findRayleighFlow(Input input) {
+    public Rayleigh findRayleighFlow(double gamma, String inputType, double inputValue) {
         Rayleigh rayleighFlow;
-        double gamma = input.getGamma();
         double mach;
         double totostar;
         double ttstar;
@@ -24,9 +22,9 @@ public class RayleighServiceImpl extends RayBaseFunctions {
             throw new InputOutOfBoundsException("Gamma must be greater than 1");
         }
 
-        switch (input.getInputType()){
+        switch (inputType){
             case "mach":
-                mach = input.getInputValue();
+                mach = inputValue;
                 if (mach <= 0.0){
                     throw new InputOutOfBoundsException("Mach number must be greater than 0");
                 }

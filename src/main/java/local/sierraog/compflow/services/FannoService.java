@@ -1,8 +1,7 @@
 package local.sierraog.compflow.services;
 
 import local.sierraog.compflow.models.Fanno;
-import local.sierraog.compflow.models.Input;
 
 public interface FannoService {
-    Fanno findFannoFlow(Input input);
+    Fanno findFannoFlow(double gamma, String inputType, double inputValue);
 }

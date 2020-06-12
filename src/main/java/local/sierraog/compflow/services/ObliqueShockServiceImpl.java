@@ -3,16 +3,13 @@ package local.sierraog.compflow.services;
 import local.sierraog.compflow.exceptions.IncorrectInputTypeException;
 import local.sierraog.compflow.exceptions.InputOutOfBoundsException;
 import local.sierraog.compflow.models.ObliqueShock;
-import local.sierraog.compflow.models.TwoInputs;
 import org.springframework.stereotype.Service;
 
 @Service(value = "obliqueShockService")
 public class ObliqueShockServiceImpl extends ObliqBaseFunctions {
     @Override
-    public ObliqueShock findObliqueFlow(TwoInputs input){
+    public ObliqueShock findObliqueFlow(double gamma, double mach, String secondInputType, double secondInputValue){
         ObliqueShock obliqueFlow;
-        double gamma = input.getGamma();
-        double mach = input.getMach();
         double mach2;
         double theta;
         double beta;
@@ -31,30 +28,30 @@ public class ObliqueShockServiceImpl extends ObliqBaseFunctions {
             throw new InputOutOfBoundsException("Mach number must be greater than 0");
         }
 
-        switch (input.getSecondInputType()){
+        switch (secondInputType){
             case "mach1n":
-                if (input.getSecondInputValue() <= 1.0 || input.getSecondInputValue() >= mach){
+                if (secondInputValue <= 1.0 || secondInputValue >= mach){
                     throw new InputOutOfBoundsException("M1n must be between 1 and Mach1");
                 }
-                beta = Math.asin(input.getSecondInputValue()/mach);
+                beta = Math.asin(secondInputValue/mach);
                 theta = theta(mach, beta, gamma);
                 break;
             case "thetaweak":
-                theta = input.getSecondInputValue()*3.14159265359/180.0;
+                theta = secondInputValue*3.14159265359/180.0;
                 if (theta >= 3.14159265359/2.0 || theta <= 0.0){
                     throw new InputOutOfBoundsException("Turning angle theta must be between 0 and pi/2");
                 }
                 beta = beta(mach, theta, gamma, "weak");
                 break;
             case "thetastrong":
-                theta = input.getSecondInputValue()*3.14159265359/180.0;
+                theta = secondInputValue*3.14159265359/180.0;
                 if (theta >= 3.14159265359/2.0 || theta <= 0.0){
                     throw new InputOutOfBoundsException("Turning angle theta must be between 0 and 90 degrees");
                 }
                 beta = beta(mach, theta, gamma, "strong");
                 break;
             case "beta":
-                beta = input.getSecondInputValue()*3.14159265359/180.0;
+                beta = secondInputValue*3.14159265359/180.0;
                 if (beta >= 3.14159265359/2.0){
                     throw new InputOutOfBoundsException("Wave angle beta must be less than 90 degrees");
                 }
